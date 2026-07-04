@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timezone Arbitrage — Find Overlapping Work Hours</title>
+<meta name="description" content="Free timezone overlap calculator for remote teams. Find shared working hours across cities, plan meetings, and learn timezone arbitrage strategies.">
+<meta name="keywords" content="timezone overlap calculator, remote team time zones, meeting planner across timezones, timezone arbitrage">
+<meta property="og:title" content="Timezone Arbitrage — Find Overlapping Work Hours">
+<meta property="og:description" content="Free timezone overlap calculator for remote teams. Find shared working hours across cities, plan meetings, and learn timezone arbitrage strategies.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://timezonearbitrage.com">
+<link rel="canonical" href="https://timezonearbitrage.com">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0a;
+  --bg-card: #111111;
+  --bg-surface: #161616;
+  --text: #e8e8e8;
+  --text-secondary: #888888;
+  --text-muted: #555555;
+  --accent: var(--site-accent, #2563eb);
+  --accent-light: var(--site-accent-light, #1a3a5c);
+  --accent-dark: var(--site-accent-dark, #1e40af);
+  --border: #222222;
+  --border-accent: #333333;
+  --max-w: 960px;
+  --nav-h: 56px;
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: var(--nav-h); }
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: var(--accent); text-decoration: none; transition: color 0.15s ease; }
+a:hover { color: var(--text); }
+
+.nav-logo-icon { display: none; }
+
+/* ---- NAV ---- */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: var(--nav-h);
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+}
+
+.nav-links a {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: color 0.15s ease;
+}
+
+.nav-links a:hover { color: var(--text); }
+
+/* ---- HERO ---- */
+.hero {
+  padding-top: calc(var(--nav-h) + 6rem);
+  padding-bottom: 6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.hero-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+}
+
+.hero-title {
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  max-width: 700px;
+}
+
+.hero-sub {
+  margin-top: 1.25rem;
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  max-width: 560px;
+  line-height: 1.7;
+}
+
+.hero-cta {
+  margin-top: 2.5rem;
+}
+
+.btn-primary {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-decoration: none;
+}
+
+.btn-primary:hover { background: var(--accent-dark); color: #fff; }
+
+/* ---- CONTENT ---- */
+.content {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 1.5rem 6rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 2rem;
+  color: var(--text);
+}
+
+/* ---- TOOL SECTION ---- */
+.tool-section {
+  padding-top: 5rem;
+  margin-bottom: 5rem;
+}
+
+.tool-header {
+  margin-bottom: 2rem;
+}
+
+.tool-area {
+  border: 1px solid var(--border-accent);
+  background: var(--bg-card);
+  border-radius: 0;
+}
+
+.tool-container {
+  padding: 2.5rem;
+  min-height: 320px;
+}
+
+.tool-container h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.tool-container label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  margin-top: 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tool-container label:first-of-type {
+  margin-top: 0;
+}
+
+.tool-container input[type="text"],
+.tool-container input[type="number"],
+.tool-container input[type="email"],
+.tool-container select,
+.tool-container textarea {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border-accent);
+  border-radius: 0;
+  font-size: 0.9rem;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.15s ease;
+}
+
+.tool-container input:focus,
+.tool-container select:focus,
+.tool-container textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.tool-container button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.7rem 1.75rem;
+  border-radius: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: background 0.15s ease;
+}
+
+.tool-container button:hover {
+  background: var(--accent-dark);
+}
+
+.tool-result {
+  margin-top: 1.75rem;
+  padding: 1.5rem;
+  background: var(--bg-surface);
+  border-left: 3px solid var(--accent);
+  border-radius: 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.tool-result strong {
+  font-weight: 700;
+}
+
+.tool-row {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+}
+
+.tool-row > div {
+  flex: 1;
+}
+
+/* ---- FEATURES ---- */
+.features-section {
+  padding-top: 5rem;
+  margin-bottom: 5rem;
+  border-top: 1px solid var(--border);
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.feature-card {
+  background: var(--bg-card);
+  padding: 2rem;
+  border-radius: 0;
+  counter-increment: feature;
+  position: relative;
+}
+
+.feature-icon {
+  display: none;
+}
+
+.feature-num {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.feature-num::before {
+  content: counter(feature, decimal-leading-zero);
+}
+
+.feature-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.01em;
+}
+
+.feature-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ---- ABOUT ---- */
+.about {
+  padding-top: 5rem;
+  margin-bottom: 5rem;
+  border-top: 1px solid var(--border);
+}
+
+.about-content {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  max-width: 640px;
+}
+
+.about-content h3 {
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 2rem 0 0.75rem;
+}
+
+.about-content h3:first-child {
+  margin-top: 0;
+}
+
+.about-content p {
+  margin-bottom: 1rem;
+}
+
+/* ---- FAQ ---- */
+.faq {
+  padding-top: 5rem;
+  margin-bottom: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.faq-q {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 1.25rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  transition: color 0.15s ease;
+}
+
+.faq-q:hover { color: var(--accent); }
+
+.faq-q::after {
+  content: '+';
+  font-size: 1.25rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+
+.faq-q.open::after { content: '\2212'; color: var(--accent); }
+
+.faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.faq-a.open {
+  max-height: 500px;
+  padding-bottom: 1.25rem;
+}
+
+.faq-a p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* ---- FOOTER ---- */
+.footer {
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.footer-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 3rem 1.5rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.footer-logo {
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.footer-disc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+  max-width: 420px;
+  line-height: 1.6;
+}
+
+.footer-heading {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.footer-links a {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.footer-links a:hover { color: var(--text); }
+
+.footer-bottom {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 2.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.footer-bottom p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 640px) {
+  .hero {
+    padding-top: calc(var(--nav-h) + 3.5rem);
+    padding-bottom: 3.5rem;
+  }
+
+  .nav-links { display: none; }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-row {
+    flex-direction: column;
+  }
+
+  .tool-container {
+    padding: 1.5rem;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+  }
+
+  .tool-section,
+  .features-section,
+  .about,
+  .faq {
+    padding-top: 3rem;
+    margin-bottom: 3rem;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo"><span class="nav-logo-icon" aria-hidden="true">🌐</span>Timezone Arbitrage</a>
+    <div class="nav-links">
+      <a href="#tool">Tool</a>
+      <a href="#features">Features</a>
+      <a href="#about">About</a>
+      <a href="#faq">FAQ</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="hero-label">Timezone Arbitrage</p>
+    <h1 class="hero-title">Find your team's shared hours</h1>
+    <p class="hero-sub">Calculate timezone overlaps instantly. Plan meetings across continents and discover timezone arbitrage strategies for remote work.</p>
+    <div class="hero-cta">
+      <a href="#tool" class="btn-primary">Get started</a>
+    </div>
+  </div>
+</header>
+
+<main class="content">
+
+  <section class="tool-section" id="tool">
+    <div class="tool-header">
+      <h2 class="section-title">Timezone Arbitrage</h2>
+    </div>
+    <div class="tool-area" id="tool-area">
+      <div class="tool-container" id="tool-container"></div>
+    </div>
+  </section>
+
+  <section class="features-section" id="features">
+    <h2 class="section-title">Use cases</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+  <div class="feature-icon">👥</div>
+  <div class="feature-name">Remote team planning</div>
+  <div class="feature-desc">Find shared working hours across your distributed team's locations.</div>
+</div>
+
+<div class="feature-card">
+  <div class="feature-icon">📅</div>
+  <div class="feature-name">Meeting scheduler</div>
+  <div class="feature-desc">Plan meetings at times that work for participants in different cities.</div>
+</div>
+
+<div class="feature-card">
+  <div class="feature-icon">💼</div>
+  <div class="feature-name">Hiring strategy</div>
+  <div class="feature-desc">Identify time zones that complement your existing team's coverage.</div>
+</div>
+
+<div class="feature-card">
+  <div class="feature-icon">📈</div>
+  <div class="feature-name">Market access</div>
+  <div class="feature-desc">See when global financial markets overlap for multi-session trading.</div>
+</div>
+
+<div class="feature-card">
+  <div class="feature-icon">☀️</div>
+  <div class="feature-name">Follow-the-sun support</div>
+  <div class="feature-desc">Design 24/7 customer support coverage with timezone-distributed teams.</div>
+</div>
+
+<div class="feature-card">
+  <div class="feature-icon">🏖️</div>
+  <div class="feature-name">Freelance optimization</div>
+  <div class="feature-desc">Find locations where your work hours align with high-paying client markets.</div>
+</div>
+
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <h2 class="section-title">What is timezone arbitrage?</h2>
+    <div class="about-content"><h3>The remote work advantage</h3><p>Timezone arbitrage is the practice of leveraging time zone differences for competitive advantage. Hire developers in UTC+5 who start their workday as your US team finishes — your product gets built around the clock. Or trade markets that open while your local exchange sleeps.</p><h3>For remote teams</h3><p>Distributed teams need overlapping hours for real-time collaboration. The sweet spot is 3-4 hours of overlap. This calculator helps you find those hours so you can schedule standups, pair programming sessions, and meetings when everyone's awake.</p><h3>For traders and freelancers</h3><p>Freelancers can charge premium rates by being available during their client's business hours while enjoying lower cost of living elsewhere. Traders can access Asian, European, and American market sessions from anywhere.</p></div>
+  </section>
+
+  <section class="faq" id="faq">
+    <h2 class="section-title">Frequently asked questions</h2>
+    <div class="faq-list" id="faq-list"></div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="footer-logo"><span class="nav-logo-icon" aria-hidden="true">🌐</span>Timezone Arbitrage</span>
+      <p class="footer-disc">TimezoneArbitrage.com is a free tool for remote teams and professionals. Timezone data may not reflect recent DST changes.</p>
+    </div>
+    <div class="footer-links">
+      <p class="footer-heading">Resources</p>
+      <a href="https://sepehr.ai" target="_blank" rel="noopener">sepehr.ai</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 Timezone Arbitrage. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+const SITE_CONFIG = {"faqs":[{"q":"How does the timezone calculator work?","a":"Enter two or more cities and the tool displays each location's working hours (9am-5pm local time) on a 24-hour timeline. Overlapping sections are highlighted, showing you the shared window for scheduling meetings or collaboration."},{"q":"Does it account for daylight saving time?","a":"The calculator uses the IANA timezone database which includes DST transitions. However, DST rules change periodically — if you notice an error, please let us know."},{"q":"What is follow-the-sun development?","a":"Follow-the-sun is a workflow where work is handed off between teams in different timezones so development continues 24 hours a day. A team in Asia hands off to Europe, which hands off to the Americas, creating continuous progress."},{"q":"How many overlap hours do remote teams need?","a":"Most successful remote teams aim for 3-4 hours of overlap for synchronous communication. The rest of the day is for focused async work. Less than 2 hours of overlap makes real-time collaboration difficult."},{"q":"Can timezone arbitrage save money?","a":"Yes. Companies can reduce costs by hiring skilled professionals in regions with lower cost of living while maintaining quality. Individuals can earn higher wages from markets with higher pay while living in more affordable locations."}],"accentColor":"#0891b2","accentLight":"#cffafe","accentDark":"#0e7490","ctaText":""};
+document.addEventListener('DOMContentLoaded', () => {
+  // Set accent colors from config
+  if (SITE_CONFIG.accentColor) {
+    document.documentElement.style.setProperty('--site-accent', SITE_CONFIG.accentColor);
+    document.documentElement.style.setProperty('--site-accent-light', SITE_CONFIG.accentLight || SITE_CONFIG.accentColor + '22');
+    document.documentElement.style.setProperty('--site-accent-dark', SITE_CONFIG.accentDark || SITE_CONFIG.accentColor);
+  }
+
+  // FAQ accordion
+  const faqList = document.getElementById('faq-list');
+  if (SITE_CONFIG.faqs) {
+    SITE_CONFIG.faqs.forEach(faq => {
+      const item = document.createElement('div');
+      item.className = 'faq-item';
+      item.innerHTML = `
+        <button class="faq-q">${faq.q}</button>
+        <div class="faq-a"><p>${faq.a}</p></div>
+      `;
+      const btn = item.querySelector('.faq-q');
+      const answer = item.querySelector('.faq-a');
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('open');
+        answer.classList.toggle('open');
+      });
+      faqList.appendChild(item);
+    });
+  }
+
+  // Feature card numbering
+  document.querySelectorAll('.feature-card').forEach(card => {
+    const numEl = document.createElement('div');
+    numEl.className = 'feature-num';
+    card.insertBefore(numEl, card.firstChild);
+  });
+
+  // Nav scroll effect
+  const nav = document.getElementById('nav');
+  let lastScroll = 0;
+  window.addEventListener('scroll', () => {
+    const current = window.scrollY;
+    if (current > 60) {
+      nav.style.borderBottomColor = '#333';
+    } else {
+      nav.style.borderBottomColor = '';
+    }
+    lastScroll = current;
+  }, { passive: true });
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  // Init tool if available
+  if (typeof initTool === 'function') {
+    initTool(document.getElementById('tool-container'));
+  }
+});
+
+function initTool(container) {
+  const cities = [
+    { name: 'New York', tz: 'America/New_York', flag: '🇺🇸' },
+    { name: 'Los Angeles', tz: 'America/Los_Angeles', flag: '🇺🇸' },
+    { name: 'London', tz: 'Europe/London', flag: '🇬🇧' },
+    { name: 'Berlin', tz: 'Europe/Berlin', flag: '🇩🇪' },
+    { name: 'Dubai', tz: 'Asia/Dubai', flag: '🇦🇪' },
+    { name: 'Mumbai', tz: 'Asia/Kolkata', flag: '🇮🇳' },
+    { name: 'Singapore', tz: 'Asia/Singapore', flag: '🇸🇬' },
+    { name: 'Tokyo', tz: 'Asia/Tokyo', flag: '🇯🇵' },
+    { name: 'Sydney', tz: 'Australia/Sydney', flag: '🇦🇺' },
+    { name: 'São Paulo', tz: 'America/Sao_Paulo', flag: '🇧🇷' },
+    { name: 'Toronto', tz: 'America/Toronto', flag: '🇨🇦' },
+    { name: 'Paris', tz: 'Europe/Paris', flag: '🇫🇷' },
+    { name: 'Amsterdam', tz: 'Europe/Amsterdam', flag: '🇳🇱' },
+    { name: 'Lagos', tz: 'Africa/Lagos', flag: '🇳🇬' },
+    { name: 'Nairobi', tz: 'Africa/Nairobi', flag: '🇰🇪' },
+    { name: 'Bangkok', tz: 'Asia/Bangkok', flag: '🇹🇭' },
+    { name: 'Seoul', tz: 'Asia/Seoul', flag: '🇰🇷' },
+    { name: 'Jakarta', tz: 'Asia/Jakarta', flag: '🇮🇩' },
+    { name: 'Mexico City', tz: 'America/Mexico_City', flag: '🇲🇽' },
+    { name: 'Buenos Aires', tz: 'America/Argentina/Buenos_Aires', flag: '🇦🇷' }
+  ];
+
+  const options = cities.map(c => `<option value="${c.tz}">${c.flag} ${c.name}</option>`).join('');
+
+  container.innerHTML = `
+    <h3>Timezone overlap calculator</h3>
+    <div class="tool-row">
+      <div>
+        <label for="city1">Location 1</label>
+        <select id="city1">${options}</select>
+      </div>
+      <div>
+        <label for="city2">Location 2</label>
+        <select id="city2">${options}</select>
+      </div>
+    </div>
+    <div style="margin-top:1rem">
+      <label for="city3">Location 3 (optional)</label>
+      <select id="city3"><option value="">— none —</option>${options}</select>
+    </div>
+    <button id="calc-btn">Calculate overlap</button>
+    <div id="tz-result"></div>
+  `;
+
+  document.getElementById('city2').value = 'Europe/London';
+
+  document.getElementById('calc-btn').addEventListener('click', () => {
+    const selected = [
+      document.getElementById('city1').value,
+      document.getElementById('city2').value,
+    ];
+    const c3 = document.getElementById('city3').value;
+    if (c3) selected.push(c3);
+
+    const now = new Date();
+    const offsets = selected.map(tz => {
+      const fmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: 'numeric', hour12: false, timeZoneName: 'shortOffset' });
+      const parts = fmt.formatToParts(now);
+      const hourStr = parts.find(p => p.type === 'hour')?.value || '0';
+      const utcPart = parts.find(p => p.type === 'timeZoneName')?.value || 'GMT';
+      const match = utcPart.match(/([+-]?\d+)/);
+      const offsetHrs = match ? parseInt(match[1]) : 0;
+      const city = cities.find(c => c.tz === tz);
+      return { tz, name: city ? `${city.flag} ${city.name}` : tz, offset: offsetHrs };
+    });
+
+    const hours = [];
+    for (let h = 0; h < 24; h++) {
+      const localHours = offsets.map(o => ((h + o.offset) % 24 + 24) % 24);
+      const allWorking = localHours.every(lh => lh >= 9 && lh < 17);
+      hours.push({ utc: h, localHours, allWorking });
+    }
+
+    const overlap = hours.filter(h => h.allWorking);
+
+    let html = '<div class="tool-result">';
+    html += '<strong>Current times:</strong><br>';
+    offsets.forEach(o => {
+      const t = new Date().toLocaleTimeString('en-US', { timeZone: o.tz, hour: '2-digit', minute: '2-digit', hour12: true });
+      html += `${o.name}: <strong>${t}</strong> (UTC${o.offset >= 0 ? '+' : ''}${o.offset})<br>`;
+    });
+
+    html += `<br><strong>Overlap (9am–5pm working hours):</strong><br>`;
+    if (overlap.length === 0) {
+      html += 'No overlapping working hours found. Consider async communication or adjusted schedules.';
+    } else {
+      html += `<strong style="color:var(--accent)">${overlap.length} hours</strong> of overlap<br><br>`;
+      html += '<div style="display:flex;gap:2px;margin:0.5rem 0;flex-wrap:wrap">';
+      for (let h = 0; h < 24; h++) {
+        const isOverlap = hours[h].allWorking;
+        const bg = isOverlap ? 'var(--accent)' : 'var(--border)';
+        const color = isOverlap ? '#fff' : 'var(--text-muted)';
+        const label = h.toString().padStart(2, '0');
+        html += `<div style="width:28px;height:32px;background:${bg};color:${color};display:flex;align-items:center;justify-content:center;font-size:0.7rem;border-radius:4px;font-weight:${isOverlap ? '600' : '400'}" title="UTC ${label}:00">${label}</div>`;
+      }
+      html += '</div>';
+      html += '<div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px">Hours shown in UTC. Highlighted = all locations within 9am–5pm.</div>';
+
+      html += '<br>';
+      offsets.forEach(o => {
+        const start = overlap[0];
+        const end = overlap[overlap.length - 1];
+        const localStart = ((start.utc + o.offset) % 24 + 24) % 24;
+        const localEnd = (((end.utc + 1) + o.offset) % 24 + 24) % 24;
+        const fmt = h => `${h === 0 ? 12 : h > 12 ? h - 12 : h}${h < 12 ? 'am' : 'pm'}`;
+        html += `${o.name}: ${fmt(localStart)} – ${fmt(localEnd)}<br>`;
+      });
+    }
+
+    html += '</div>';
+    document.getElementById('tz-result').innerHTML = html;
+  });
+}
+
+</script>
+</body>
+</html>
